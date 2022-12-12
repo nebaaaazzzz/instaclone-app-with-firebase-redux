@@ -1,12 +1,13 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-const Addscreen = () => {
+const Save = ({ navigation }) => {
+  console.log(navigation.params);
   return (
     <View>
-      <Text>Addscreen</Text>
+      <Text>Save</Text>
     </View>
   );
 };
 
-export default Addscreen;
+export default Save;

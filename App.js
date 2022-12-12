@@ -1,23 +1,30 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import LandingScreen from "./screens/Landing.screen";
-import RegisterScreen from "./screens/Register.screen";
+import LandingScreen from "./screens/auth/Landing.screen";
+import RegisterScreen from "./screens/auth/Register.screen";
 import { auth } from "./config/firebase";
-import Loginscreen from "./screens/Login.screen";
+import Loginscreen from "./screens/auth/Login.screen";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "./redux/store";
 
-import Homescreen from "./screens/Home.screen";
+import Homescreen from "./screens/main/Home.screen";
+import { createStackNavigator } from "@react-navigation/stack";
+import { useAuthState } from "react-firebase-hooks/auth";
+import Addscreen from "./screens/main/Add.screen";
 const StackNavigator = createStackNavigator();
 export default function App() {
-  const dispatch = useDispatch();
-
   const [user, loading, error] = useAuthState(auth);
-
+  if (loading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size={"large"} color="#000" />
+      </View>
+    );
+  }
   return (
     <NavigationContainer>
-      {user ? (
+      {!user ? (
         <StackNavigator.Navigator>
           <StackNavigator.Screen
             name="Landing"
@@ -41,7 +48,12 @@ export default function App() {
             <StackNavigator.Screen
               name="Home"
               component={Homescreen}
-              option={{ headerShown: false }}
+              options={{ headerShown: false }}
+            />
+            <StackNavigator.Screen
+              name="Add"
+              options={{ headerShadowVisible: false }}
+              component={Addscreen}
             />
           </StackNavigator.Navigator>
         </Provider>
@@ -49,10 +61,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-// <Provider store={store}>
-//   <NavigationContainer>
-//
-//     </StackNavigator.Navigator>
-//   </NavigationContainer>
-// </Provider>

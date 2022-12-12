@@ -1,22 +1,30 @@
 import { View, Text } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserById } from "../redux/features/user";
+import { fetchUserById } from "../../redux/features/user";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Feedscreen from "./Feed.screen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import Addscreen from "./Add.screen";
 import Profilescreen from "./Profile.screen";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../config/firebase";
 const Tab = createBottomTabNavigator();
 
-const Homescreen = () => {
+const Homescreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { currentUser } = useSelector((state) => state.user);
+  const user = useAuthState(auth);
+  const currentUser = useSelector((state) => state.currentUser);
   useEffect(() => {
-    dispatch(fetchUserById(user.id));
+    dispatch(fetchUserById(user[0].uid));
   }, []);
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+      }}
+    >
       <Tab.Screen
         name="Feed"
         component={Feedscreen}
@@ -28,12 +36,19 @@ const Homescreen = () => {
       />
       <Tab.Screen
         options={{
+          headerShown: true,
           tabBarIcon: (props) => (
             <MaterialCommunityIcons name="plus-box" {...props} size={26} />
           ),
         }}
         name="Add"
-        component={Addscreen}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("Add");
+          },
+        }}
+        component={() => <></>}
       />
       <Tab.Screen
         options={{

@@ -1,7 +1,8 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage, ref } from "firebase/storage";
+
 const firebaseConfig = {
   apiKey: process.env.apiKey,
   authDomain: process.env.authDomain,
@@ -14,9 +15,11 @@ const firebaseConfig = {
 let app;
 let auth;
 let db;
+let storage;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  storage = ref(getStorage(app));
 }
-export { app, auth, db };
+export { app, auth, db, storage };

@@ -1,33 +1,39 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../config/firebase";
 
 const initialState = {
   currentUser: null,
 };
+export const fetchUserById = createAsyncThunk(
+  "user/fetchById",
+  async (userId) => {
+    try {
+      const docRef = doc(db, "users", userId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.data();
+    } catch (err) {
+      throw err;
+    }
+  }
+);
 
 export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    increment: (state) => {
-      state.value += 1;
-    },
+    // increment: (state) => {
+    //   state.value += 1;
+    // },
   },
-  extraReducers: (builder) => {
-    builder.addCase(fetchUserById.fulfilled, async (state, action) => {
+  extraReducers: {
+    [fetchUserById.fulfilled]: function (state, action) {
       state.currentUser = action.payload;
-    });
+    },
   },
 });
 
-export const fetchUserById = createAsyncThunk(
-  "users/fetchByIdStatus",
-  async (userId) => {
-    const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef);
-    return docSnap;
-  }
-);
 // Action creators are generated for each case reducer function
-export const { increment, decrement, incrementByAmount } = userSlice.actions;
+// export const { increment, decrement, incrementByAmount } = userSlice.actions;
 
 export default userSlice.reducer;
