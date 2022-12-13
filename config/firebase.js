@@ -20,6 +20,6 @@ if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  storage = ref(getStorage(app));
+  storage = getStorage(app);
 }
 export { app, auth, db, storage };

@@ -11,13 +11,23 @@ import {
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
-import { uploadBytes } from "firebase/storage";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { TextInput } from "react-native-gesture-handler";
-export default function Addscreen() {
+import { app, db, storage } from "../../config/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useSelector } from "react-redux";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+export default function Addscreen({ navigation }) {
   const [image, setImage] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const cameraRef = useRef(null);
+  const currentUser = useSelector((state) => state.currentUser);
   const [caption, setCaption] = useState("");
   if (!permission) {
     // Camera permissions are still loading
@@ -57,24 +67,54 @@ export default function Addscreen() {
     const res = await cameraRef.current.takePictureAsync();
     setImage(res.uri);
   }
-  (() => {
-    const formData = new FormData();
-    formData.append("image", {
-      uri: image,
-      name: image,
-      type: image,
+
+  const createPost = async (downloadUrl) => {
+    await addDoc(collection(db, "posts", currentUser.uid, "userPosts"), {
+      caption,
+      downloadUrl,
+      timestamp: serverTimestamp(),
     });
-    console.log(formData.has("image"));
-  })();
-  function upload() {
-    const formData = new FormData();
-    formData.append("image", {
-      uri: image,
-      name: image,
-      type: image,
-    });
-    console.log(formData.get("image"));
-  }
+  };
+  const handleSave = async () => {
+    const imageBlob = await (await fetch(image)).blob();
+    const userStorageRef = ref(
+      storage,
+      `post/${currentUser.uid}/${Math.random().toString(36).split(".")[1]}`
+    );
+    const uploadTask = uploadBytesResumable(userStorageRef, imageBlob);
+    //posts/userid/userPosts
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        // console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case "paused":
+            // console.log("Upload is paused");
+            break;
+          case "running":
+            // console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+      },
+      async () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref).then(
+          (downloadURL) => downloadURL
+        );
+        await createPost(downloadURL);
+        navigation.popToTop();
+      }
+    );
+  };
   return (
     <View style={styles.container}>
       {image ? (
@@ -94,7 +134,7 @@ export default function Addscreen() {
               paddingVertical: 15,
             }}
           />
-          <Button title="Save" onPress={() => navigation.navigate("Save")} />
+          <Button title="Save" onPress={handleSave} />
         </View>
       ) : (
         <Camera style={styles.camera} type={type} ref={cameraRef}>

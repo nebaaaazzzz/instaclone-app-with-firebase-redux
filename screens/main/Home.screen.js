@@ -9,14 +9,16 @@ import Addscreen from "./Add.screen";
 import Profilescreen from "./Profile.screen";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../config/firebase";
+import SearchScreen from "./Search.screen";
+import { fetchUserPosts } from "../../redux/features/posts";
 const Tab = createBottomTabNavigator();
-
+const Empty = () => <></>;
 const Homescreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const user = useAuthState(auth);
-  const currentUser = useSelector((state) => state.currentUser);
   useEffect(() => {
     dispatch(fetchUserById(user[0].uid));
+    dispatch(fetchUserPosts(user[0].uid));
   }, []);
   return (
     <Tab.Navigator
@@ -35,6 +37,15 @@ const Homescreen = ({ navigation }) => {
         }}
       />
       <Tab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: (props) => (
+            <MaterialCommunityIcons name="magnify" {...props} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
         options={{
           headerShown: true,
           tabBarIcon: (props) => (
@@ -48,7 +59,7 @@ const Homescreen = ({ navigation }) => {
             navigation.navigate("Add");
           },
         }}
-        component={() => <></>}
+        component={Empty}
       />
       <Tab.Screen
         options={{
