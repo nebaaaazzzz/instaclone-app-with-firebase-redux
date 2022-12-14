@@ -12,6 +12,7 @@ import Homescreen from "./screens/main/Home.screen";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Addscreen from "./screens/main/Add.screen";
+import Commentscreen from "./screens/main/Comment.screen";
 const StackNavigator = createStackNavigator();
 export default function App() {
   const [user, loading, error] = useAuthState(auth);
@@ -54,6 +55,11 @@ export default function App() {
               name="Add"
               options={{ headerShadowVisible: false }}
               component={Addscreen}
+            />
+            <StackNavigator.Screen
+              name="Comment"
+              options={{ headerShadowVisible: false }}
+              component={Commentscreen}
             />
           </StackNavigator.Navigator>
         </Provider>

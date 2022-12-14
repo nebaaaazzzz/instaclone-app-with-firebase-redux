@@ -12,7 +12,6 @@ import { db } from "../../config/firebase";
 
 const SearchScreen = ({ navigation }) => {
   const [users, setUsers] = useState([]);
-  console.log(users);
   const fetchUsers = async (search) => {
     const collectionRef = collection(db, "users");
     const q = query(collectionRef, where("firstName", ">=", search));
@@ -20,6 +19,12 @@ const SearchScreen = ({ navigation }) => {
     const users = querySnapshot.docs.map((doc) => {
       return doc.data();
     });
+    //user = snapshot.data()
+    // user.id = snapshot.id
+    //fetch user followingPosts
+    //clear state before fetching data
+    //add  comment to post
+    //
     setUsers(users);
   };
   return (

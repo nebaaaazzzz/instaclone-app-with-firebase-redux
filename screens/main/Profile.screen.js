@@ -1,16 +1,15 @@
 import { View, Text, StyleSheet, FlatList, Image, Button } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../config/firebase";
 import { collection, deleteDoc, doc, setDoc } from "firebase/firestore";
+import { useSignOut } from "react-firebase-hooks/auth";
 
-const Profilescreen = ({ params, navigation }) => {
+const Profilescreen = ({ route, navigation }) => {
   const [userPosts, setUserPosts] = useState([]);
   const [user, setUser] = useState(null);
   const [following, setFollowing] = useState(false);
-
-  const [userAuth] = useAuthState(auth);
+  const [signOut, loading, error] = useSignOut(auth);
   const {
     currentUser,
     posts,
@@ -23,12 +22,17 @@ const Profilescreen = ({ params, navigation }) => {
     };
   });
   useEffect(() => {
-    if (params?.uid !== userAuth.uid) {
+    if (route?.params?.uid !== currentUser.uid) {
       setUser(currentUser);
       setUserPosts(posts);
     } else {
     }
-  }, [params?.uid]);
+    if (userfollowing.includes(currentUser.uid)) {
+      setFollowing(true);
+    } else {
+      setFollowing(false);
+    }
+  }, [route?.params?.uid]);
   const handleFollow = async () => {
     await setDoc(
       collection(
@@ -36,14 +40,14 @@ const Profilescreen = ({ params, navigation }) => {
         "following",
         currentUser.uid,
         "userFollowing",
-        params?.uid
+        route?.params?.uid
       ),
       {}
     );
   };
   const handleUnfollow = async () => {
     await deleteDoc(
-      doc(db, "following", currentUser.uid, "userFollowing", params?.uid)
+      doc(db, "following", currentUser.uid, "userFollowing", route?.params?.uid)
     );
   };
   if (!user) return <View></View>;
@@ -54,8 +58,8 @@ const Profilescreen = ({ params, navigation }) => {
           {user.firstName} {currentUser.lastName}{" "}
         </Text>
         <Text> {user.email}</Text>
-        {params?.id == userAuth.uid ? (
-          <></>
+        {route?.params?.id !== currentUser.uid ? (
+          <Button title="logout" onPress={() => signOut()} />
         ) : (
           <View>
             {following ? (
@@ -72,7 +76,6 @@ const Profilescreen = ({ params, navigation }) => {
           horizontal={false}
           data={userPosts}
           renderItem={({ item }) => {
-            console.log(item.downloadUrl);
             return (
               <View style={styles.containerImage}>
                 <Image

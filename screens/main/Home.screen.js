@@ -11,6 +11,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../config/firebase";
 import SearchScreen from "./Search.screen";
 import { fetchUserPosts } from "../../redux/features/posts";
+import { fetchUserFollowing } from "../../redux/features/following";
 const Tab = createBottomTabNavigator();
 const Empty = () => <></>;
 const Homescreen = ({ navigation }) => {
@@ -19,6 +20,7 @@ const Homescreen = ({ navigation }) => {
   useEffect(() => {
     dispatch(fetchUserById(user[0].uid));
     dispatch(fetchUserPosts(user[0].uid));
+    dispatch(fetchUserFollowing(user[0].uid));
   }, []);
   return (
     <Tab.Navigator

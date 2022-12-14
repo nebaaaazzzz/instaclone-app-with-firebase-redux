@@ -1,16 +1,20 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
-export const fetchFollowing = createAsyncThunk("following", async (userId) => {
-  try {
-    const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef);
-    return { ...docSnap.data(), uid: userId };
-  } catch (err) {
-    throw err;
+export const fetchUserFollowing = createAsyncThunk(
+  "following",
+  async (userId) => {
+    try {
+      const querySnapshot = await getDocs(
+        collection(db, "following", userId, "userFollowing")
+      );
+      return querySnapshot.docs.map((doc) => doc.id);
+    } catch (err) {
+      throw err;
+    }
   }
-});
+);
 
 export const followingSlice = createSlice({
   name: "following",
@@ -21,7 +25,7 @@ export const followingSlice = createSlice({
     // },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchFollowing.fulfilled, (state, action) => {
+    builder.addCase(fetchUserFollowing.fulfilled, (state, action) => {
       return (state = action.payload);
     });
   },

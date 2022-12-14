@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { collection, doc, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
 export const fetchUserPosts = createAsyncThunk("posts", async (userId) => {
@@ -26,7 +26,6 @@ export const postsSlice = createSlice({
   },
   extraReducers: {
     [fetchUserPosts.fulfilled]: function (state, action) {
-      console.log("payload", action.payload);
       return (state = action.payload);
     },
   },
